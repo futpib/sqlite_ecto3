@@ -397,6 +397,10 @@ if Code.ensure_loaded?(Sqlitex.Server) do
       all(query)
     end
 
+    defp expr(%Ecto.Query.FromExpr{source: source}, sources, query) do
+      expr(source, sources, query)
+    end
+
     defp expr({:fragment, _, [kw]}, _sources, query) when is_list(kw) or tuple_size(kw) == 3 do
       error!(query, "SQLite adapter does not support keyword or interpolated fragments")
     end
@@ -559,13 +563,13 @@ if Code.ensure_loaded?(Sqlitex.Server) do
     defp create_names(prefix, sources, pos, limit, stmt) when pos < limit do
       current =
         case elem(sources, pos) do
+          %Ecto.SubQuery{} ->
+            {nil, [?s | Integer.to_string(pos)], nil}
+          {:fragment, _, _} ->
+            {nil, [?f | Integer.to_string(pos)], nil}
           {table, schema, _} ->
             name = [String.first(table) | Integer.to_string(pos)]
             {quote_table(prefix, table), name, schema}
-          {:fragment, _, _} ->
-            {nil, [?f | Integer.to_string(pos)], nil}
-          %Ecto.SubQuery{} ->
-            {nil, [?s | Integer.to_string(pos)], nil}
         end
       [current | create_names(prefix, sources, pos + 1, limit, stmt)]
     end

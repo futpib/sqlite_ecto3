@@ -119,7 +119,7 @@ defmodule Sqlite.Ecto3.Test do
   end
 
   defp normalize(query, operation \\ :all, counter \\ 0) do
-    {query, _params, _key} = Ecto.Query.Planner.prepare(query, operation, Sqlite.Ecto3, counter)
+    {query, _params, _key} = Ecto.Query.Planner.plan(query, operation, Sqlite.Ecto3, counter)
     {query, _} = Ecto.Query.Planner.normalize(query, operation, Sqlite.Ecto3, counter)
     query
   end
@@ -165,16 +165,20 @@ defmodule Sqlite.Ecto3.Test do
   end
 
   test "from with subquery" do
-    query = subquery("posts"
-      |> select([r], %{x: r.x, y: r.y}))
-      |> select([r], r.x)
-      |> normalize
+    query = subquery(
+      "posts"
+      |> select([r], %{x: r.x, y: r.y})
+    )
+    |> select([r], r.x)
+    |> normalize
     assert all(query) == ~s{SELECT s0."x" FROM (SELECT p0."x" AS "x", p0."y" AS "y" FROM "posts" AS p0) AS s0}
 
-    query = subquery("posts"
-      |> select([r], %{x: r.x, z: r.y}))
-      |> select([r], r)
-      |> normalize
+    query = subquery(
+      "posts"
+      |> select([r], %{x: r.x, z: r.y})
+    )
+    |> select([r], r)
+    |> normalize
     assert all(query) == ~s{SELECT s0."x", s0."z" FROM (SELECT p0."x" AS "x", p0."y" AS "z" FROM "posts" AS p0) AS s0}
   end
 
@@ -489,7 +493,7 @@ defmodule Sqlite.Ecto3.Test do
     assert all(query) == ~s{SELECT ?1 IN (?2,?3,?4) FROM "schema" AS s0}
 
     # query = Schema |> select([e], 1 in e.w)
-    |> normalize
+    # |> normalize
     # assert all(query) == ~s{SELECT 1 = ANY(s0."w") FROM "schema" AS s0}
     # This assertion omitted because we can't support array values.
 
@@ -1235,7 +1239,7 @@ defmodule Sqlite.Ecto3.Test do
                 {:add, :a, :map, [default: %{foo: "bar", baz: "boom"}]}
               ]
     }
-    assert execute_ddl(create) == [~s|CREATE TABLE "posts" ("a" TEXT DEFAULT '{"foo":"bar","baz":"boom"}')|]
+    assert execute_ddl(create) == [~s|CREATE TABLE "posts" ("a" TEXT DEFAULT '{"baz":"boom","foo":"bar"}')|]
   end
 
   test "create table with a map column, and a string default" do
