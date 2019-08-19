@@ -147,6 +147,12 @@ defmodule Sqlite.Ecto3.Test do
     assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0}
   end
 
+  test "select a + b" do
+    query = (from p in Post, select: p.visits + 2)
+    |> normalize
+    assert all(query) == ~s{SELECT p0.\"visits\" + 2 FROM \"posts\" AS p0}
+  end
+
   test "from without schema" do
     query = "posts"
     |> select([r], r.x)

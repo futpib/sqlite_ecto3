@@ -61,10 +61,8 @@ if Code.ensure_loaded?(Sqlitex.Server) do
 
     defp map_params(params) do
       Enum.map params, fn
-        # TODO?: is this still necessary?
-        # %{__struct__: _} = data_type ->
-        #   {:ok, value} = Ecto.DataType.dump(data_type)
-        #   value
+        %{__struct__: _} = data_type ->
+          dump(data_type)
         %{} = value ->
           json_library().encode!(value)
         value when is_list(value) ->
@@ -72,6 +70,33 @@ if Code.ensure_loaded?(Sqlitex.Server) do
         value ->
           value
       end
+    end
+
+    defp dump(%Time{} = time) do
+      {microsecond, _} = time.microsecond
+      {time.hour, time.minute, time.second, microsecond}
+    end
+
+    defp dump(%Date{} = date) do
+      {date.year, date.month, date.day}
+    end
+
+    defp dump(%NaiveDateTime{} = date_time) do
+      {microsecond, _} = date_time.microsecond
+      {
+        {date_time.year, date_time.month, date_time.day},
+        {date_time.hour, date_time.minute, date_time.second, microsecond}
+      }
+    end
+
+    defp dump(%DateTime{} = date_time) do
+      date_time
+      |> DateTime.to_naive()
+      |> dump()
+    end
+
+    defp dump(%Decimal{} = decimal) do
+      decimal
     end
 
     defp json_library() do
@@ -187,13 +212,9 @@ if Code.ensure_loaded?(Sqlitex.Server) do
     end
 
     def update(prefix, table, fields, filters, returning) do
-      {fields, count} = intersperse_reduce(fields, ", ", 1, fn field, acc ->
-        {[quote_name(field), " = ?" | Integer.to_string(acc)], acc + 1}
-      end)
+      {fields, count} = intersperse_reduce(fields, ", ", 1, &fields_reducer/2)
 
-      {filters, _count} = intersperse_reduce(filters, " AND ", count, fn field, acc ->
-        {[quote_name(field), " = ?" | Integer.to_string(acc)], acc + 1}
-      end)
+      {filters, _count} = intersperse_reduce(filters, " AND ", count, &fields_reducer/2)
 
       return = returning_clause(prefix, table, returning, "UPDATE")
 
@@ -202,19 +223,38 @@ if Code.ensure_loaded?(Sqlitex.Server) do
     end
 
     def delete(prefix, table, filters, returning) do
-      {filters, _} = intersperse_reduce(filters, " AND ", 1, fn field, acc ->
-        {[quote_name(field), " = ?" | Integer.to_string(acc)], acc + 1}
-      end)
+      {filters, _} = intersperse_reduce(filters, " AND ", 1, &fields_reducer/2)
 
       ["DELETE FROM ", quote_table(prefix, table), " WHERE ",
        filters | returning_clause(prefix, table, returning, "DELETE")]
     end
 
+    defp fields_reducer({key, _value}, acc) do
+      {[quote_name(key), " = ?" | Integer.to_string(acc)], acc + 1}
+    end
+
+    defp fields_reducer(field, acc) do
+      {[quote_name(field), " = ?" | Integer.to_string(acc)], acc + 1}
+    end
+
     ## Query generation
 
-    binary_ops =
-      [==: " = ", !=: " != ", <=: " <= ", >=: " >= ", <: " < ", >: " > ",
-       and: " AND ", or: " OR ", ilike: " ILIKE ", like: " LIKE "]
+    binary_ops = [
+    ==: " = ",
+    !=: " != ",
+    <=: " <= ",
+    >=: " >= ",
+    <: " < ",
+    >: " > ",
+    and: " AND ",
+    or: " OR ",
+    ilike: " ILIKE ",
+    like: " LIKE ",
+    +: " + ",
+    -: " - ",
+    *: " * ",
+    /: " / ",
+    ]
 
     @binary_ops Keyword.keys(binary_ops)
 

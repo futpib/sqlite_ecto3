@@ -65,11 +65,11 @@ Code.require_file "../../test/support/migration.exs", __DIR__
 # Pool repo for non-async tests
 alias Ecto.Integration.PoolRepo
 
-Application.put_env(:ecto, PoolRepo,
+Application.put_env :ecto, PoolRepo,
   adapter: Sqlite.Ecto3,
   pool: Ecto.Adapters.SQL.Sandbox,
   database: "/tmp/sqlite_ecto3.sqlite",
-  pool_size: 10)
+  pool_size: 10
 
 defmodule Ecto.Integration.PoolRepo do
   use Ecto.Integration.Repo,
@@ -104,6 +104,7 @@ Code.require_file "../../deps/ecto_sql/integration_test/support/migration.exs", 
 # :dbg.tracer
 # :dbg.p :all, :c
 # :dbg.tpl Sqlitex, :_, :x
+# :dbg.tpl Ecto.Adapters.SQL, :_, :x
 # :dbg.tpl Sqlitex.Server, :_, []
 # :dbg.tpl Sqlite.Ecto3.Connection, :_, []
 # :dbg.tpl Sqlite.DbConnection.Protocol, :_, []

@@ -1,14 +1,14 @@
 defmodule ConnectionTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Sqlite.DbConnection.Query
   alias Sqlite.DbConnection.Result
 
-  setup do
+  setup_all do
     opts = [database: ":memory:", backoff_type: :stop]
     {:ok, pid} = DBConnection.start_link(Sqlite.DbConnection.Protocol, opts)
 
-    query = %Query{name: "", statement: "CREATE TABLE uniques (a int UNIQUE)"}
+    query = %Query{name: "", statement: "CREATE TABLE IF NOT EXISTS uniques (a int UNIQUE)"}
     {:ok, _, _} = DBConnection.prepare_execute(pid, query, [])
 
     {:ok, [pid: pid]}
@@ -31,10 +31,10 @@ defmodule ConnectionTest do
     query = %Query{name: "42", statement: "SELECT 42"}
     assert {:ok, query} = DBConnection.prepare(pid, query)
 
-    assert {:ok, %Result{rows: [[42]]}} = DBConnection.execute(pid, query, [])
-    assert {:ok, %Result{rows: [[42]]}} = DBConnection.execute(pid, query, [])
+    assert {:ok, _query, %Result{rows: [[42]]}} = DBConnection.execute(pid, query, [])
+    assert {:ok, _query, %Result{rows: [[42]]}} = DBConnection.execute(pid, query, [])
     assert {:ok, %Result{}} = DBConnection.close(pid, query)
-    assert {:ok, %Result{rows: [[42]]}} = DBConnection.execute(pid, query, [])
+    assert {:ok, _query, %Result{rows: [[42]]}} = DBConnection.execute(pid, query, [])
   end
 
   test "wrong number of placeholders", context do

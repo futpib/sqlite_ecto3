@@ -68,6 +68,9 @@ defimpl DBConnection.Query, for: Sqlite.DbConnection.Query do
 
   defp translate_value({"", "datetime"}), do: nil
 
+  defp translate_value({"", "naive_datetime"}), do: nil
+  defp translate_value({naive_datetime, "naive_datetime"}), do: to_naive_datetime(naive_datetime)
+
   defp translate_value({0, "boolean"}), do: false
   defp translate_value({1, "boolean"}), do: true
 
@@ -93,12 +96,29 @@ defimpl DBConnection.Query, for: Sqlite.DbConnection.Query do
 
   defp to_date(date) do
     <<yr::binary-size(4), "-", mo::binary-size(2), "-", da::binary-size(2)>> = date
-    {String.to_integer(yr), String.to_integer(mo), String.to_integer(da)}
+    {:ok, date} = Date.new(String.to_integer(yr), String.to_integer(mo), String.to_integer(da))
+    date
   end
 
   defp to_time(<<hr::binary-size(2), ":", mi::binary-size(2), ":", se::binary-size(2), ".", fr::binary>>) when byte_size(fr) <= 6 do
     fr = String.to_integer(fr <> String.duplicate("0", 6 - String.length(fr)))
-    {String.to_integer(hr), String.to_integer(mi), String.to_integer(se), fr}
+    {:ok, time} = Time.new(String.to_integer(hr), String.to_integer(mi), String.to_integer(se), fr)
+    time
+  end
+
+  defp to_naive_datetime(<<yr::binary-size(4), "-", mo::binary-size(2), "-", da::binary-size(2), " ", hr::binary-size(2), ":", mi::binary-size(2), ":", se::binary-size(2), ".", fr::binary>>) when byte_size(fr) <= 6 do
+    fr = String.to_integer(fr <> String.duplicate("0", 6 - String.length(fr)))
+    {:ok, naive_datetime} = NaiveDateTime.new(
+      String.to_integer(yr),
+      String.to_integer(mo),
+      String.to_integer(da),
+
+      String.to_integer(hr),
+      String.to_integer(mi),
+      String.to_integer(se),
+      fr
+    )
+    naive_datetime
   end
 
   # We use a special conversion for when the user is trying to cast to a
@@ -116,11 +136,28 @@ defimpl DBConnection.Query, for: Sqlite.DbConnection.Query do
   end
 
   defp string_to_datetime(<<yr::binary-size(4), "-", mo::binary-size(2), "-", da::binary-size(2)>>) do
-    {String.to_integer(yr), String.to_integer(mo), String.to_integer(da)}
+    {:ok, date} = Date.new(
+      String.to_integer(yr),
+      String.to_integer(mo),
+      String.to_integer(da)
+    )
+    date
   end
+
   defp string_to_datetime(str) do
     <<yr::binary-size(4), "-", mo::binary-size(2), "-", da::binary-size(2), " ", hr::binary-size(2), ":", mi::binary-size(2), ":", se::binary-size(2), ".", fr::binary-size(6)>> = str
-    {{String.to_integer(yr), String.to_integer(mo), String.to_integer(da)}, {String.to_integer(hr), String.to_integer(mi), String.to_integer(se), String.to_integer(fr)}}
+    fr = String.to_integer(fr <> String.duplicate("0", 6 - String.length(fr)))
+    {:ok, naive_datetime} = NaiveDateTime.new(
+      String.to_integer(yr),
+      String.to_integer(mo),
+      String.to_integer(da),
+
+      String.to_integer(hr),
+      String.to_integer(mi),
+      String.to_integer(se),
+      fr
+    )
+    naive_datetime
   end
 end
 

@@ -81,7 +81,7 @@ defmodule Sqlite.Ecto3 do
   defp date_decode(x), do: {:ok, x}
 
   defp json_decode(x) when is_binary(x),
-    do: {:ok, Application.get_env(:ecto, :json_library).decode!(x)}
+    do: {:ok, Application.get_env(:ecto, :json_library, Jason).decode!(x)}
   defp json_decode(x),
     do: {:ok, x}
 

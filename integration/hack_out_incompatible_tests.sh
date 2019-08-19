@@ -9,11 +9,11 @@ if [ "$(uname)" == "Darwin" ] ; then
 
 sed -i "" '/test "insert all/ i\ 
   @tag :insert_cell_wise_defaults
-' deps/ecto_sql/integration_test/cases/repo.exs
+' deps/ecto/integration_test/cases/repo.exs
 
 sed -i "" '/failing child foreign key/ i\ 
   @tag :foreign_key_constraint
-' deps/ecto_sql/integration_test/cases/repo.exs
+' deps/ecto/integration_test/cases/repo.exs
 
 sed -i "" '/test "Repo.insert_all escape/ i\ 
   @tag :insert_cell_wise_defaults
@@ -29,9 +29,9 @@ sed -i "" '/subqueries with map update and select expression/ i\
 
 else
 
-sed -i '/test "insert all/ i @tag :insert_cell_wise_defaults' deps/ecto_sql/integration_test/cases/repo.exs
+sed -i '/test "insert all/ i @tag :insert_cell_wise_defaults' deps/ecto/integration_test/cases/repo.exs
 
-sed -i '/failing child foreign key/ i @tag :foreign_key_constraint' deps/ecto_sql/integration_test/cases/repo.exs
+sed -i '/failing child foreign key/ i @tag :foreign_key_constraint' deps/ecto/integration_test/cases/repo.exs
 
 sed -i '/test "Repo.insert_all escape/ i @tag :insert_cell_wise_defaults' deps/ecto_sql/integration_test/sql/sql.exs
 
