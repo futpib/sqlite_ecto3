@@ -34,7 +34,9 @@ defmodule Sqlite.Ecto3 do
   """
 
   # Inherit all behaviour from Ecto.Adapters.SQL
-  use Ecto.Adapters.SQL, :sqlitex
+  use Ecto.Adapters.SQL,
+    driver: :sqlitex,
+    migration_lock: nil
 
   import String, only: [to_integer: 1]
 

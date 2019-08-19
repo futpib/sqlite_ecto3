@@ -38,11 +38,12 @@ defmodule Sqlite.Ecto3.Mixfile do
   defp deps do
     [{:connection, "~> 1.0"},
      {:credo, "~> 0.10", only: [:dev, :test]},
-     {:db_connection, "~> 1.1"},
+     {:db_connection, "~> 2.0"},
      {:decimal, "~> 1.5"},
      {:excoveralls, "~> 0.9", only: :test},
      {:ex_doc, "~> 0.20", runtime: false, only: :docs},
      {:ecto, "~> 3.1"},
+     {:ecto_sql, "~> 3.1"},
      {:poison, "~> 2.2 or ~> 3.0", optional: true},
      {:postgrex, "~> 0.13", optional: true},
      {:sbroker, "~> 1.0"},
