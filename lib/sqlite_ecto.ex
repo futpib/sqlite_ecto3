@@ -135,7 +135,10 @@ defmodule Sqlite.Ecto3 do
       database |> Path.dirname |> File.mkdir_p!
       {:ok, db} = Sqlitex.open(database)
       :ok = Sqlitex.exec(db, "PRAGMA journal_mode = WAL")
-      {:ok, [[journal_mode: "wal"]]} = Sqlitex.query(db, "PRAGMA journal_mode")
+      :ok = case Sqlitex.query(db, "PRAGMA journal_mode") do
+        {:ok, [[journal_mode: "wal"]]} -> :ok
+        {:ok, [[journal_mode: "memory"]]} -> :ok
+      end
       Sqlitex.close(db)
       :ok
     end

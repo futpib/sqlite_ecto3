@@ -33,44 +33,49 @@ case System.version() do
   _ -> :ok
 end
 
-pool =
-  case System.get_env("ECTO_POOL") || "poolboy" do
-    "poolboy"        -> DBConnection.Poolboy
-    "sojourn_broker" -> DBConnection.Sojourn
-  end
-
 # Load support files
-Code.require_file "../../deps/ecto/integration_test/support/repo.exs", __DIR__
-Code.require_file "../../deps/ecto/integration_test/support/schemas.exs", __DIR__
-Code.require_file "../../deps/ecto/integration_test/support/migration.exs", __DIR__
-
-Code.require_file "../../test/support/schemas.exs", __DIR__
-Code.require_file "../../test/support/migration.exs", __DIR__
+Code.require_file "../../deps/ecto_sql/integration_test/support/repo.exs", __DIR__
 
 # Pool repo for async, safe tests
 alias Ecto.Integration.TestRepo
 
 Application.put_env(:ecto, TestRepo,
   adapter: Sqlite.Ecto3,
-  database: "/tmp/test_repo.db",
-  pool: Ecto.Adapters.SQL.Sandbox,
-  ownership_pool: pool)
+  database: ":memory:",
+  pool: Ecto.Adapters.SQL.Sandbox
+)
 
 defmodule Ecto.Integration.TestRepo do
-  use Ecto.Integration.Repo, otp_app: :ecto
+  use Ecto.Integration.Repo,
+    otp_app: :ecto,
+    adapter: Sqlite.Ecto3
+
+  def uuid do
+    Ecto.UUID
+  end
 end
+
+# Load support files
+Code.require_file "../../deps/ecto_sql/integration_test/support/repo.exs", __DIR__
+Code.require_file "../../deps/ecto/integration_test/support/schemas.exs", __DIR__
+Code.require_file "../../deps/ecto_sql/integration_test/support/migration.exs", __DIR__
+
+Code.require_file "../../test/support/schemas.exs", __DIR__
+Code.require_file "../../test/support/migration.exs", __DIR__
 
 # Pool repo for non-async tests
 alias Ecto.Integration.PoolRepo
 
 Application.put_env(:ecto, PoolRepo,
   adapter: Sqlite.Ecto3,
-  pool: DBConnection.Poolboy,
-  database: "/tmp/test_repo.db",
+  pool: Ecto.Adapters.SQL.Sandbox,
+  database: ":memory:",
   pool_size: 10)
 
 defmodule Ecto.Integration.PoolRepo do
-  use Ecto.Integration.Repo, otp_app: :ecto
+  use Ecto.Integration.Repo,
+    otp_app: :ecto,
+    adapter: Sqlite.Ecto3
 
   def create_prefix(prefix) do
     "create schema #{prefix}"
@@ -93,7 +98,14 @@ end
 
 # Load support models and migration
 Code.require_file "../../deps/ecto/integration_test/support/schemas.exs", __DIR__
-Code.require_file "../../deps/ecto/integration_test/support/migration.exs", __DIR__
+Code.require_file "../../deps/ecto_sql/integration_test/support/migration.exs", __DIR__
+
+:erlang.system_flag(:backtrace_depth, 50)
+
+# :dbg.tracer
+# :dbg.p :all, :call
+# :dbg.tpl Sqlite.Ecto3.Connection, :_, []
+# :dbg.tpl Sqlite.DbConnection.Protocol, :_, []
 
 # Load up the repository, start it, and run migrations
 _   = Sqlite.Ecto3.storage_down(TestRepo.config)

@@ -4,9 +4,17 @@ defmodule Sqlite.DbConnection.Protocol do
   alias Sqlite.DbConnection.Query
   use DBConnection
 
-  defstruct [db: nil, path: nil, checked_out?: false]
+  defstruct [
+    db: nil,
+    path: nil,
+    checked_out?: false,
+  ]
 
-  @type state :: %__MODULE__{db: pid, path: String.t, checked_out?: boolean}
+  @type state :: %__MODULE__{
+    db: pid,
+    path: String.t,
+    checked_out?: boolean,
+  }
 
   @spec connect(Keyword.t) :: {:ok, state}
   def connect(opts) do
@@ -105,6 +113,10 @@ defmodule Sqlite.DbConnection.Protocol do
     handle_transaction(sql, [timeout: Keyword.get(opts, :timeout, 5000)], s)
   end
 
+  def ping(state) do
+    {:ok, state}
+  end
+
   defp refined_info(prepared_info) do
     types =
       prepared_info.types
@@ -126,12 +138,12 @@ defmodule Sqlite.DbConnection.Protocol do
   defp maybe_atom_to_lc_string(nil), do: nil
   defp maybe_atom_to_lc_string(item), do: item |> to_string |> String.downcase
 
-  defp handle_execute(%Query{statement: sql}, params, _sync, opts, s) do
+  defp handle_execute(%Query{statement: sql} = query, params, _sync, opts, s) do
     # Note that we rely on Sqlitex.Server to cache the prepared statement,
     # so we can simply refer to the original SQL statement here.
     case run_stmt(sql, params, opts, s) do
       {:ok, result} ->
-        {:ok, result, s}
+        {:ok, query, result, s}
       other ->
         other
     end

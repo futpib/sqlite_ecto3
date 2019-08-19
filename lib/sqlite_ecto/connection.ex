@@ -30,7 +30,7 @@ if Code.ensure_loaded?(Sqlitex.Server) do
       end
     end
 
-    def execute(conn, sql, params, opts) when is_binary(sql) or is_list(sql) do
+    def query(conn, sql, params, opts) when is_binary(sql) or is_list(sql) do
       query = %Sqlite.DbConnection.Query{name: "", statement: IO.iodata_to_binary(sql)}
       case DBConnection.prepare_execute(conn, query, map_params(params), opts) do
         {:ok, %Sqlite.DbConnection.Query{}, result} ->
@@ -44,7 +44,7 @@ if Code.ensure_loaded?(Sqlitex.Server) do
 
     def execute(conn, query, params, opts) do
       case DBConnection.execute(conn, query, map_params(params), opts) do
-        {:ok, _} = ok ->
+        {:ok, _query, _result} = ok ->
           ok
         {:error, %ArgumentError{} = err} ->
           {:reset, err}
@@ -61,16 +61,21 @@ if Code.ensure_loaded?(Sqlitex.Server) do
 
     defp map_params(params) do
       Enum.map params, fn
-        %{__struct__: _} = data_type ->
-          {:ok, value} = Ecto.DataType.dump(data_type)
-          value
+        # TODO?: is this still necessary?
+        # %{__struct__: _} = data_type ->
+        #   {:ok, value} = Ecto.DataType.dump(data_type)
+        #   value
         %{} = value ->
-          Ecto.Adapter.json_library().encode!(value)
+          json_library().encode!(value)
         value when is_list(value) ->
-          Ecto.Adapter.json_library().encode!(value)
+          json_library().encode!(value)
         value ->
           value
       end
+    end
+
+    defp json_library() do
+      Application.get_env(:ecto, :json_library, Jason)
     end
 
     alias Ecto.Query
@@ -545,7 +550,7 @@ if Code.ensure_loaded?(Sqlitex.Server) do
     # datetime string. When we get here, we look for a CAST function as a signal
     # to convert that back to Elixir date types.
 
-    defp create_names(%{prefix: prefix, sources: sources}, stmt) do
+    defp create_names(query = %{prefix: prefix, sources: sources}, stmt) do
       create_names(prefix, sources, 0, tuple_size(sources), stmt)
       |> prohibit_subquery_if_necessary(stmt)
       |> List.to_tuple
@@ -554,7 +559,7 @@ if Code.ensure_loaded?(Sqlitex.Server) do
     defp create_names(prefix, sources, pos, limit, stmt) when pos < limit do
       current =
         case elem(sources, pos) do
-          {table, schema} ->
+          {table, schema, _} ->
             name = [String.first(table) | Integer.to_string(pos)]
             {quote_table(prefix, table), name, schema}
           {:fragment, _, _} ->
@@ -675,6 +680,11 @@ if Code.ensure_loaded?(Sqlitex.Server) do
     def execute_ddl(keyword) when is_list(keyword),
       do: error!(nil, "SQLite adapter does not support keyword lists in execute")
 
+    def ddl_logs(result) do
+      # TODO
+      []
+    end
+
     defp column_definitions(table, columns) do
       intersperse_map(columns, ", ", &column_definition(table, &1))
     end
@@ -771,7 +781,7 @@ if Code.ensure_loaded?(Sqlitex.Server) do
     defp default_expr({:ok, literal}, _type) when is_number(literal) or is_boolean(literal),
       do: [" DEFAULT ", to_string(literal)]
     defp default_expr({:ok, %{} = map}, :map) do
-      default = Ecto.Adapter.json_library().encode!(map)
+      default = json_library().encode!(map)
       [" DEFAULT ", single_quote(default)]
     end
     defp default_expr({:ok, {:fragment, expr}}, _type),
