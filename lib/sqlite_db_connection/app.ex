@@ -3,7 +3,11 @@ defmodule Sqlite.DbConnection.App do
   use Application
 
   def start(_, _) do
+    children = [
+      {Sqlite.DbConnection.SqlitexServerPool, {}}
+    ]
+
     opts = [strategy: :one_for_one, name: Sqlite.DbConnection.Supervisor]
-    Supervisor.start_link([], opts)
+    Supervisor.start_link(children, opts)
   end
 end

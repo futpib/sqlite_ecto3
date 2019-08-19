@@ -39,11 +39,10 @@ Code.require_file "../../deps/ecto_sql/integration_test/support/repo.exs", __DIR
 # Pool repo for async, safe tests
 alias Ecto.Integration.TestRepo
 
-Application.put_env(:ecto, TestRepo,
+Application.put_env :ecto, TestRepo,
   adapter: Sqlite.Ecto3,
-  database: ":memory:",
+  database: "/tmp/sqlite_ecto3.sqlite",
   pool: Ecto.Adapters.SQL.Sandbox
-)
 
 defmodule Ecto.Integration.TestRepo do
   use Ecto.Integration.Repo,
@@ -69,7 +68,7 @@ alias Ecto.Integration.PoolRepo
 Application.put_env(:ecto, PoolRepo,
   adapter: Sqlite.Ecto3,
   pool: Ecto.Adapters.SQL.Sandbox,
-  database: ":memory:",
+  database: "/tmp/sqlite_ecto3.sqlite",
   pool_size: 10)
 
 defmodule Ecto.Integration.PoolRepo do
@@ -100,10 +99,12 @@ end
 Code.require_file "../../deps/ecto/integration_test/support/schemas.exs", __DIR__
 Code.require_file "../../deps/ecto_sql/integration_test/support/migration.exs", __DIR__
 
-:erlang.system_flag(:backtrace_depth, 50)
+# :erlang.system_flag(:backtrace_depth, 50)
 
 # :dbg.tracer
-# :dbg.p :all, :call
+# :dbg.p :all, :c
+# :dbg.tpl Sqlitex, :_, :x
+# :dbg.tpl Sqlitex.Server, :_, []
 # :dbg.tpl Sqlite.Ecto3.Connection, :_, []
 # :dbg.tpl Sqlite.DbConnection.Protocol, :_, []
 

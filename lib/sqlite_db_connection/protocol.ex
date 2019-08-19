@@ -6,62 +6,55 @@ defmodule Sqlite.DbConnection.Protocol do
 
   defstruct [
     db: nil,
-    path: nil,
-    checked_out?: false,
   ]
 
   @type state :: %__MODULE__{
     db: pid,
-    path: String.t,
-    checked_out?: boolean,
   }
 
   @spec connect(Keyword.t) :: {:ok, state}
   def connect(opts) do
-    db_path = Keyword.fetch!(opts, :database)
-    db_timeout = Keyword.get(opts, :db_timeout, 5000)
+    db = Sqlite.DbConnection.SqlitexServerPool.acquire_server(opts)
 
-    {:ok, db} = Sqlitex.Server.start_link(db_path, db_timeout: db_timeout)
-    :ok = Sqlitex.Server.exec(db, "PRAGMA foreign_keys = ON")
-    {:ok, [[foreign_keys: 1]]} = Sqlitex.Server.query(db, "PRAGMA foreign_keys")
-
-    {:ok, %__MODULE__{db: db, path: db_path, checked_out?: false}}
+    {:ok, %__MODULE__{db: db}}
   end
 
   @spec disconnect(Exception.t, state) :: :ok
   def disconnect(_exc, %__MODULE__{db: db} = _state) when db != nil do
-    GenServer.stop(db)
-    :ok
+    Sqlite.DbConnection.SqlitexServerPool.release_server(db)
   end
   def disconnect(_exception, _state), do: :ok
 
   @spec checkout(state) :: {:ok, state}
-  def checkout(%{checked_out?: false} = s) do
-    {:ok, %{s | checked_out?: true}}
+  def checkout(state) do
+    {:ok, state}
   end
 
   @spec checkin(state) :: {:ok, state}
-  def checkin(%{checked_out?: true} = s) do
-    {:ok, %{s | checked_out?: false}}
+  def checkin(state) do
+    {:ok, state}
   end
 
   @spec handle_prepare(Sqlite.DbConnection.Query.t, Keyword.t, state) ::
     {:ok, Sqlite.DbConnection.Query.t, state} |
     {:error, ArgumentError.t, state}
-  def handle_prepare(%Query{statement: statement, prepared: nil} = query, _opts,
-                     %__MODULE__{checked_out?: true, db: db} = s)
+  def handle_prepare(
+    %Query{statement: statement, prepared: nil} = query,
+    _opts,
+    %__MODULE__{db: db} = state
+  )
   do
     binary_stmt = :erlang.iolist_to_binary(statement)
     case Sqlitex.Server.prepare(db, binary_stmt) do
       {:ok, prepared_info} ->
         updated_query = %{query | prepared: refined_info(prepared_info)}
-        {:ok, updated_query, s}
+        {:ok, updated_query, state}
       {:error, {_sqlite_errcode, _message}} = err ->
-        sqlite_error(err, s)
+        sqlite_error(err, state)
     end
   end
-  def handle_prepare(query, _opts, s) do
-    query_error(s, "query #{inspect query} has already been prepared")
+  def handle_prepare(query, _opts, state) do
+    query_error(state, "query #{inspect query} has already been prepared")
   end
 
   @spec handle_execute(Sqlite.DbConnection.Query.t, list, Keyword.t, state) ::
