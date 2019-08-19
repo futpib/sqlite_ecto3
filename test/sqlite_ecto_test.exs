@@ -1,4 +1,4 @@
-defmodule Sqlite.Ecto2.Test do
+defmodule Sqlite.Ecto3.Test do
   use ExUnit.Case, async: true
 
   # IMPORTANT: This is closely modeled on Ecto's postgres_test.exs file.
@@ -8,16 +8,16 @@ defmodule Sqlite.Ecto2.Test do
   alias Ecto.Integration.TestRepo
   alias Ecto.Migration.Table
   alias Sqlite.DbConnection.Query
-  alias Sqlite.Ecto2.Connection, as: SQL
+  alias Sqlite.Ecto3.Connection, as: SQL
 
   import Ecto.Query
 
   describe "storage_up" do
     test "fails with :already_up on second call" do
       tmp = [database: tempfilename()]
-      assert Sqlite.Ecto2.storage_up(tmp) == :ok
+      assert Sqlite.Ecto3.storage_up(tmp) == :ok
       assert File.exists? tmp[:database]
-      assert Sqlite.Ecto2.storage_up(tmp) == {:error, :already_up}
+      assert Sqlite.Ecto3.storage_up(tmp) == {:error, :already_up}
       File.rm(tmp[:database])
     end
 
@@ -28,7 +28,7 @@ defmodule Sqlite.Ecto2.Test do
         Your config/*.exs file should have something like this in it:
 
           config :my_app, MyApp.Repo,
-            adapter: Sqlite.Ecto2,
+            adapter: Sqlite.Ecto3,
             database: "/path/to/sqlite/database"
 
         Options provided were:
@@ -36,23 +36,23 @@ defmodule Sqlite.Ecto2.Test do
         [mumble: "no database here"]
 
         """,
-        fn -> Sqlite.Ecto2.storage_up([mumble: "no database here"]) == :ok end
+        fn -> Sqlite.Ecto3.storage_up([mumble: "no database here"]) == :ok end
     end
   end
 
   test "storage down (twice)" do
     tmp = [database: tempfilename()]
-    assert Sqlite.Ecto2.storage_up(tmp) == :ok
-    assert Sqlite.Ecto2.storage_down(tmp) == :ok
+    assert Sqlite.Ecto3.storage_up(tmp) == :ok
+    assert Sqlite.Ecto3.storage_down(tmp) == :ok
     refute File.exists? tmp[:database]
-    assert Sqlite.Ecto2.storage_down(tmp) == {:error, :already_down}
+    assert Sqlite.Ecto3.storage_down(tmp) == {:error, :already_down}
   end
 
   test "storage up creates directory" do
     dir = "/tmp/my_sqlite_ecto_directory/"
     File.rm_rf! dir
     tmp = [database: dir <> tempfilename()]
-    :ok = Sqlite.Ecto2.storage_up(tmp)
+    :ok = Sqlite.Ecto3.storage_up(tmp)
     assert File.exists?(dir <> "tmp/") && File.dir?(dir <> "tmp/")
   end
 
@@ -76,10 +76,10 @@ defmodule Sqlite.Ecto2.Test do
       field :y, :integer
       field :z, :integer
 
-      has_many :comments, Sqlite.Ecto2.Test.Schema2,
+      has_many :comments, Sqlite.Ecto3.Test.Schema2,
         references: :x,
         foreign_key: :z
-      has_one :permalink, Sqlite.Ecto2.Test.Schema3,
+      has_one :permalink, Sqlite.Ecto3.Test.Schema3,
         references: :y,
         foreign_key: :id
     end
@@ -100,7 +100,7 @@ defmodule Sqlite.Ecto2.Test do
     use Ecto.Schema
 
     schema "schema2" do
-      belongs_to :post, Sqlite.Ecto2.Test.Schema,
+      belongs_to :post, Sqlite.Ecto3.Test.Schema,
         references: :x,
         foreign_key: :z
     end
@@ -117,8 +117,8 @@ defmodule Sqlite.Ecto2.Test do
   end
 
   defp normalize(query, operation \\ :all, counter \\ 0) do
-    {query, _params, _key} = Ecto.Query.Planner.prepare(query, operation, Sqlite.Ecto2, counter)
-    {query, _} = Ecto.Query.Planner.normalize(query, operation, Sqlite.Ecto2, counter)
+    {query, _params, _key} = Ecto.Query.Planner.prepare(query, operation, Sqlite.Ecto3, counter)
+    {query, _} = Ecto.Query.Planner.normalize(query, operation, Sqlite.Ecto3, counter)
     query
   end
 
@@ -1299,7 +1299,7 @@ defmodule Sqlite.Ecto2.Test do
     {:ok, _, _} = DBConnection.prepare_execute(pid, query, [])
 
     assert_raise Sqlite.DbConnection.Error, "UNIQUE constraint failed: uniques.a", fn ->
-      Sqlite.Ecto2.Connection.stream(pid, "INSERT INTO uniques VALUES(1)", [], [])
+      Sqlite.Ecto3.Connection.stream(pid, "INSERT INTO uniques VALUES(1)", [], [])
       |> Enum.to_list
     end
   end

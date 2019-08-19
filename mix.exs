@@ -1,10 +1,10 @@
-defmodule Sqlite.Ecto2.Mixfile do
+defmodule Sqlite.Ecto3.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :sqlite_ecto2,
+    [app: :sqlite_ecto3,
      version: "2.4.0",
-     name: "Sqlite.Ecto2",
+     name: "Sqlite.Ecto3",
      elixir: "~> 1.4",
      deps: deps(),
      elixirc_paths: elixirc_paths(Mix.env),
@@ -25,7 +25,7 @@ defmodule Sqlite.Ecto2.Mixfile do
      package: package(),
 
      # docs
-     docs: [main: Sqlite.Ecto2]]
+     docs: [main: Sqlite.Ecto3]]
   end
 
   # Configuration for the OTP application
@@ -42,18 +42,18 @@ defmodule Sqlite.Ecto2.Mixfile do
      {:decimal, "~> 1.5"},
      {:excoveralls, "~> 0.9", only: :test},
      {:ex_doc, "~> 0.20", runtime: false, only: :docs},
-     {:ecto, "2.2.11"},
+     {:ecto, "~> 3.1"},
      {:poison, "~> 2.2 or ~> 3.0", optional: true},
      {:postgrex, "~> 0.13", optional: true},
      {:sbroker, "~> 1.0"},
      {:sqlitex, "~> 1.6"}]
   end
 
-  defp description, do: "SQLite3 adapter for Ecto2"
+  defp description, do: "SQLite3 adapter for Ecto3"
 
   defp package do
     [licenses: ["MIT"],
-      links: %{"Github" => "https://github.com/Elixir-Sqlite/sqlite_ecto2"}]
+      links: %{"Github" => "https://github.com/Elixir-Sqlite/sqlite_ecto3"}]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/sqlite_db_connection/support"]

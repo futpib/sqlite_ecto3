@@ -1,12 +1,12 @@
 Code.require_file "support/schemas.exs", __DIR__
 
-defmodule Sqlite.Ecto2.RepoTest do
+defmodule Sqlite.Ecto3.RepoTest do
   use Ecto.Integration.Case, async: Application.get_env(:ecto, :async_integration_tests, true)
 
   alias Ecto.Integration.TestRepo
   import Ecto.Query
 
-  alias Sqlite.Ecto2.Test.MiscTypes
+  alias Sqlite.Ecto3.Test.MiscTypes
 
   test "preserves time with microseconds" do
     TestRepo.insert!(%MiscTypes{name: "hello", start_time: ~T(09:33:51.130422), cost: 1})

@@ -1,11 +1,11 @@
-[![CircleCI](https://circleci.com/gh/elixir-sqlite/sqlite_ecto2.svg?style=svg)](https://circleci.com/gh/elixir-sqlite/sqlite_ecto2)
-[![Coverage Status](https://coveralls.io/repos/github/elixir-sqlite/sqlite_ecto2/badge.svg?branch=master)](https://coveralls.io/github/elixir-sqlite/sqlite_ecto2?branch=master)
-[![Hex.pm](https://img.shields.io/hexpm/v/sqlite_ecto2.svg)](https://hex.pm/packages/sqlite_ecto2)
-[![Hex.pm](https://img.shields.io/hexpm/dt/sqlite_ecto2.svg)](https://hex.pm/packages/sqlite_ecto2)
+[![CircleCI](https://circleci.com/gh/futpib/sqlite_ecto3.svg?style=svg)](https://circleci.com/gh/futpib/sqlite_ecto3)
+[![Coverage Status](https://coveralls.io/repos/github/futpib/sqlite_ecto3/badge.svg?branch=master)](https://coveralls.io/github/futpib/sqlite_ecto3?branch=master)
+[![Hex.pm](https://img.shields.io/hexpm/v/sqlite_ecto3.svg)](https://hex.pm/packages/sqlite_ecto3)
+[![Hex.pm](https://img.shields.io/hexpm/dt/sqlite_ecto3.svg)](https://hex.pm/packages/sqlite_ecto3)
 
-# sqlite_ecto2
+# sqlite_ecto3
 
-`sqlite_ecto2` is an Ecto 2.2.x adapter that allows you to create and maintain SQLite3 databases.
+`sqlite_ecto3` is an Ecto 2.2.x adapter that allows you to create and maintain SQLite3 databases.
 
 Read [the tutorial](./docs/tutorial.md) for a detailed example of how to setup and use a SQLite repo with Ecto, or just check-out the CliffsNotes in the sections below if you want to get started quickly.
 
@@ -14,22 +14,22 @@ Read [the tutorial](./docs/tutorial.md) for a detailed example of how to setup a
 
 **IMPORTANT:** This release will _only_ work with Ecto 2.2.x. If you need compatibility with older versions of Ecto, please see:
 
-* Ecto 2.1.x -> [`sqlite_ecto2` 2.0.x series](https://github.com/Sqlite-Ecto/sqlite_ecto2/tree/v2.0)
+* Ecto 2.1.x -> [`sqlite_ecto3` 2.0.x series](https://github.com/futpib/sqlite_ecto3/tree/v2.0)
 * Ecto 1.x -> [`sqlite_ecto` v1.x series](https://github.com/jazzyb/sqlite_ecto)
 
 
-## When to Use `sqlite_ecto2`
+## When to Use `sqlite_ecto3`
 
 *(and when not to use it ...)*
 
 I strongly recommend reading [Appropriate Uses for SQLite](https://sqlite.org/whentouse.html) on the SQLite site itself. All of the considerations mentioned there apply to this library as well.
 
-I will add one more: If there is *any* potential that more than one server node will need to write directly to the database at once (as often happens when using Elixir in a clustered environment), **do not use** `sqlite_ecto2`. Remember that there is no separate database process in this configuration, so each of your cluster nodes would be writing to its **own** copy of the database without any synchronization. You probably don't want that. Look for a true client/server database (Postgres, MySQL, or similar) in that case. SQLite's sweet spot is single-machine deployments (embedded, desktop, etc.).
+I will add one more: If there is *any* potential that more than one server node will need to write directly to the database at once (as often happens when using Elixir in a clustered environment), **do not use** `sqlite_ecto3`. Remember that there is no separate database process in this configuration, so each of your cluster nodes would be writing to its **own** copy of the database without any synchronization. You probably don't want that. Look for a true client/server database (Postgres, MySQL, or similar) in that case. SQLite's sweet spot is single-machine deployments (embedded, desktop, etc.).
 
 
 ## Help Wanted!
 
-I would welcome any assistance in improving `sqlite_ecto2`. Some specific areas of concern:
+I would welcome any assistance in improving `sqlite_ecto3`. Some specific areas of concern:
 
 **Documentation:**
 
@@ -55,7 +55,7 @@ Note that the Travis configuration for this repo specifically excludes OTP 19.0 
 
 ## Dependencies
 
-This library makes use of [sqlite3](https://github.com/Sqlite-Ecto/sqlitex)
+This library makes use of [sqlite3](https://github.com/futpib/sqlitex)
 Since esqlite uses Erlang NIFs to incorporate SQLite, you will need a valid C compiler to build the library.
 
 ## Example
@@ -65,14 +65,14 @@ Here is an example usage:
 ```elixir
 # In your config/config.exs file
 config :my_app, Repo,
-  adapter: Sqlite.Ecto2,
+  adapter: Sqlite.Ecto3,
   database: "ecto_simple.sqlite3"
 
 # In your application code
 defmodule Repo do
   use Ecto.Repo,
     otp_app: :my_app,
-    adapter: Sqlite.Ecto2
+    adapter: Sqlite.Ecto3
 end
 
 defmodule Weather do
@@ -100,11 +100,11 @@ end
 
 ## Usage
 
-Add `sqlite_ecto2` as a dependency in your `mix.exs` file.
+Add `sqlite_ecto3` as a dependency in your `mix.exs` file.
 
 ```elixir
 def deps do
-  [{:sqlite_ecto2, "~> 2.2"}]
+  [{:sqlite_ecto3, "~> 2.2"}]
 end
 ```
 
@@ -114,21 +114,21 @@ To use the adapter in your repo:
 defmodule MyApp.Repo do
   use Ecto.Repo,
     otp_app: :my_app,
-    adapter: Sqlite.Ecto2
+    adapter: Sqlite.Ecto3
 end
 ```
 
 ## Incorrect (Surprising?) Implementation of Boolean Operators
 
-SQLite's implementation of the boolean operator ('AND', 'OR', and 'NOT') return a integer values (0 or 1) since there is no boolean data type in SQLite. Certain Ecto code (and, in particular, some Ecto integration tests) expect actual boolean values to be returned. When `sqlite_ecto2` is returning a value directly from a column, it is possible to determine that the expected value is boolean and that mapping will occur. Once any mapping occurs (even as simple as `NOT column_value`), this mapping is no longer possible and you will get the integer value as presented by SQLite instead.
+SQLite's implementation of the boolean operator ('AND', 'OR', and 'NOT') return a integer values (0 or 1) since there is no boolean data type in SQLite. Certain Ecto code (and, in particular, some Ecto integration tests) expect actual boolean values to be returned. When `sqlite_ecto3` is returning a value directly from a column, it is possible to determine that the expected value is boolean and that mapping will occur. Once any mapping occurs (even as simple as `NOT column_value`), this mapping is no longer possible and you will get the integer value as presented by SQLite instead.
 
 ## Incomplete Ecto Constraint Implementation
 
-Several Ecto constraints are not fully implemented in `sqlite_ecto2` because SQLite does not provide enough information in its error reporting to implement changeset validation properly in all cases. Specifically, some foreign key and uniqueness constraints are reported by raising `Sqlite.Ecto2.Error` exceptions instead of returning an Ecto changeset with the error detail.
+Several Ecto constraints are not fully implemented in `sqlite_ecto3` because SQLite does not provide enough information in its error reporting to implement changeset validation properly in all cases. Specifically, some foreign key and uniqueness constraints are reported by raising `Sqlite.Ecto3.Error` exceptions instead of returning an Ecto changeset with the error detail.
 
 ## Silently Ignored Options
 
-There are a few Ecto options which `sqlite_ecto2` silently ignores because SQLite does not support them and raising an error on them does not make sense:
+There are a few Ecto options which `sqlite_ecto3` silently ignores because SQLite does not support them and raising an error on them does not make sense:
 
 * Most column options will ignore `size`, `precision`, and `scale` constraints on types because columns in SQLite have no types, and SQLite will not coerce any stored value. Thus, all "strings" are `TEXT` and "numerics" will have arbitrary precision regardless of the declared column constraints. The lone exception to this rule are Decimal types which accept `precision` and `scale` options because these constraints are handled in the driver software, not the SQLite database.
 

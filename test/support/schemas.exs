@@ -1,4 +1,4 @@
-defmodule Sqlite.Ecto2.Test.MiscTypes do
+defmodule Sqlite.Ecto3.Test.MiscTypes do
   @moduledoc false
 
   use Ecto.Schema

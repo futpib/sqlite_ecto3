@@ -55,5 +55,5 @@ _28 August 2017_
 
 ## Previous versions
 
-* [v2.0.x series](https://github.com/scouten/sqlite_ecto2/blob/v2.0/CHANGELOG.md)
+* [v2.0.x series](https://github.com/futpib/sqlite_ecto3/blob/v2.0/CHANGELOG.md)
 * [v1.x series](https://github.com/jazzyb/sqlite_ecto/blob/master/CHANGELOG.md)

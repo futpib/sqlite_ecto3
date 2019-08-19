@@ -1,4 +1,4 @@
-defmodule Sqlite.Ecto2.Test.Migration do
+defmodule Sqlite.Ecto3.Test.Migration do
   use Ecto.Migration
 
   def change do

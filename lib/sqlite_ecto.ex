@@ -1,4 +1,4 @@
-defmodule Sqlite.Ecto2 do
+defmodule Sqlite.Ecto3 do
   @moduledoc ~S"""
   Ecto Adapter module for SQLite.
 
@@ -12,14 +12,14 @@ defmodule Sqlite.Ecto2 do
   ```elixir
   # In your config/config.exs file
   config :my_app, Repo,
-    adapter: Sqlite.Ecto2,
+    adapter: Sqlite.Ecto3,
     database: "ecto_simple.sqlite3"
 
   # In your application code
   defmodule Repo do
     use Ecto.Repo,
       otp_app: :my_app,
-      adapter: Sqlite.Ecto2
+      adapter: Sqlite.Ecto3
   end
   ```
 
@@ -116,7 +116,7 @@ defmodule Sqlite.Ecto2 do
       Your config/*.exs file should have something like this in it:
 
         config :my_app, MyApp.Repo,
-          adapter: Sqlite.Ecto2,
+          adapter: Sqlite.Ecto3,
           database: "/path/to/sqlite/database"
 
       Options provided were:

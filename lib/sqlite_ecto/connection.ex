@@ -1,5 +1,5 @@
 if Code.ensure_loaded?(Sqlitex.Server) do
-  defmodule Sqlite.Ecto2.Connection do
+  defmodule Sqlite.Ecto3.Connection do
     @moduledoc false
 
     @behaviour Ecto.Adapters.SQL.Connection

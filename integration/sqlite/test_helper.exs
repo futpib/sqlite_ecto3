@@ -51,7 +51,7 @@ Code.require_file "../../test/support/migration.exs", __DIR__
 alias Ecto.Integration.TestRepo
 
 Application.put_env(:ecto, TestRepo,
-  adapter: Sqlite.Ecto2,
+  adapter: Sqlite.Ecto3,
   database: "/tmp/test_repo.db",
   pool: Ecto.Adapters.SQL.Sandbox,
   ownership_pool: pool)
@@ -64,7 +64,7 @@ end
 alias Ecto.Integration.PoolRepo
 
 Application.put_env(:ecto, PoolRepo,
-  adapter: Sqlite.Ecto2,
+  adapter: Sqlite.Ecto3,
   pool: DBConnection.Poolboy,
   database: "/tmp/test_repo.db",
   pool_size: 10)
@@ -89,20 +89,20 @@ defmodule Ecto.Integration.Case do
   end
 end
 
-{:ok, _} = Sqlite.Ecto2.ensure_all_started(TestRepo, :temporary)
+{:ok, _} = Sqlite.Ecto3.ensure_all_started(TestRepo, :temporary)
 
 # Load support models and migration
 Code.require_file "../../deps/ecto/integration_test/support/schemas.exs", __DIR__
 Code.require_file "../../deps/ecto/integration_test/support/migration.exs", __DIR__
 
 # Load up the repository, start it, and run migrations
-_   = Sqlite.Ecto2.storage_down(TestRepo.config)
-:ok = Sqlite.Ecto2.storage_up(TestRepo.config)
+_   = Sqlite.Ecto3.storage_down(TestRepo.config)
+:ok = Sqlite.Ecto3.storage_up(TestRepo.config)
 
 {:ok, _pid} = TestRepo.start_link
 {:ok, _pid} = PoolRepo.start_link
 
 :ok = Ecto.Migrator.up(TestRepo, 0, Ecto.Integration.Migration, log: false)
-:ok = Ecto.Migrator.up(TestRepo, 1, Sqlite.Ecto2.Test.Migration, log: false)
+:ok = Ecto.Migrator.up(TestRepo, 1, Sqlite.Ecto3.Test.Migration, log: false)
 Ecto.Adapters.SQL.Sandbox.mode(TestRepo, :manual)
 Process.flag(:trap_exit, true)
