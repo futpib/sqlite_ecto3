@@ -21,7 +21,8 @@ ExUnit.start exclude: [:array_type,
                        :upsert_all,
                        :with_conflict_target,
                        :without_conflict_target,
-                       :decimal_type]
+                       :decimal_type,
+                       :broken_on_sqlite_ecto2]
 
 # Configure Ecto for support and tests
 Application.put_env(:ecto, :primary_key_type, :id)
