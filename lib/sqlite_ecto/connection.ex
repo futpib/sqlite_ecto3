@@ -173,12 +173,19 @@ if Code.ensure_loaded?(Sqlitex.Server) do
       do: []
     defp on_conflict({:nothing, _, targets}, _header),
       do: [" ON CONFLICT ", conflict_target(targets) | "DO NOTHING"]
-    defp on_conflict({:replace_all, _, []}, _header),
-      do: raise ArgumentError, "Upsert in SQLite requires :conflict_target"
+    defp on_conflict({:replace_all, _, []}, _header) do
+      raise ArgumentError, "Upsert in SQLite requires :conflict_target"
+    end
+    defp on_conflict({replace_fields, _, []}, header) when is_list(replace_fields) do
+      raise ArgumentError, "Upsert in SQLite requires :conflict_target"
+    end
     defp on_conflict({:replace_all, _, {:constraint, _}}, _header),
       do: raise ArgumentError, "Upsert in SQLite does not support ON CONSTRAINT"
     defp on_conflict({:replace_all, _, targets}, header),
       do: [" ON CONFLICT ", conflict_target(targets), "DO " | replace_all(header)]
+    defp on_conflict({replace_fields, _, targets}, _header) when is_list(replace_fields) do
+      [" ON CONFLICT ", conflict_target(targets), "DO " | replace_all(replace_fields)]
+    end
     defp on_conflict({query, _, targets}, _header),
       do: [" ON CONFLICT ", conflict_target(targets), "DO " | update_all(query, "UPDATE SET ")]
 

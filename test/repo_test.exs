@@ -28,4 +28,33 @@ defmodule Sqlite.Ecto3.RepoTest do
     assert [%MiscTypes{name: "hello", cost: ^pi_ish}] =
       TestRepo.all from mt in MiscTypes
   end
+
+  test "insert! with on_conflict replace_all" do
+    TestRepo.insert!(
+      %MiscTypes{id: 1, name: "foo", start_time: ~T(01:01:01), cost: 3}
+    )
+
+    TestRepo.insert!(
+      %MiscTypes{id: 1, name: "hello", start_time: ~T(09:33:51), cost: 3.1415},
+      [
+        on_conflict: :replace_all,
+        conflict_target: [:id],
+      ]
+    )
+
+    pi_ish = Decimal.from_float(3.1415)
+    assert [%MiscTypes{name: "hello", cost: ^pi_ish}] =
+      TestRepo.all from mt in MiscTypes
+  end
+
+  test "insert! with on_conflict replace_all_except_primary_key" do
+    assert_raise ArgumentError, ~r/^Upsert in SQLite requires :conflict_target$/, fn ->
+      TestRepo.insert!(
+        %MiscTypes{id: 1, name: "hello", start_time: ~T(09:33:51), cost: 3.1415},
+        [
+          on_conflict: :replace_all_except_primary_key
+        ]
+      )
+    end
+  end
 end
