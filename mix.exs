@@ -53,7 +53,7 @@ defmodule Sqlite.Ecto3.Mixfile do
 
   defp package do
     [licenses: ["MIT"],
-      links: %{"Github" => "https://github.com/Elixir-Sqlite/sqlite_ecto3"}]
+      links: %{"Github" => "https://github.com/futpib/sqlite_ecto3"}]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/sqlite_db_connection/support"]
