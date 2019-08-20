@@ -44,7 +44,6 @@ defmodule Sqlite.Ecto3.Mixfile do
      {:ex_doc, "~> 0.20", runtime: false, only: :docs},
      {:ecto, "~> 3.1"},
      {:ecto_sql, "~> 3.1"},
-     {:poison, "~> 2.2 or ~> 3.0", optional: true},
      {:postgrex, "~> 0.13", optional: true},
      {:sbroker, "~> 1.0"},
      {:sqlitex, "~> 1.6"}]
