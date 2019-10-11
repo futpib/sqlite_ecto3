@@ -736,6 +736,13 @@ if Code.ensure_loaded?(Sqlitex.Server) do
       []
     end
 
+    def table_exists_query(table) do
+      {
+        "SELECT true FROM sqlite_master WHERE type = 'table' AND name = ?1 LIMIT 1",
+        [table]
+      }
+    end
+
     defp column_definitions(table, columns) do
       intersperse_map(columns, ", ", &column_definition(table, &1))
     end
